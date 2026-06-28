@@ -96,12 +96,13 @@ it('testcase 6', () => {
  })
 
 
-it('testcase 7', () => {
+it.only('testcase 7', () => {
 
  cy.visit('/')
-
+ cy.intercept('GET', '**/products*').as('getProducts')
  cy.get('[data-testid="sort-select"]')
   .select('price-asc')
+  cy.wait('@getProducts')
 
  cy.get('[data-testid="product-price"]')
   .then(($prices) => {
@@ -111,7 +112,7 @@ it('testcase 7', () => {
     )
 
     const sortedPrices = [...prices].sort((a, b) => a - b)
-
+     
     expect(prices).to.deep.equal(sortedPrices)
 
     })
@@ -900,7 +901,7 @@ it('testcase 26', () => {
 
           })})})
 
-it.only('testcase 27', () => {
+it('testcase 27', () => {
 
         cy.request({
         method: 'GET',
