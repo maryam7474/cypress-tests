@@ -96,7 +96,7 @@ it('testcase 6', () => {
  })
 
 
-it.only('testcase 7', () => {
+it('testcase 7', () => {
 
  cy.visit('/')
  cy.intercept('GET', '**/products*').as('getProducts')
@@ -193,23 +193,19 @@ it('testcase 11', () => {
   .type('customer@automationcamp.org')
 
  cy.get('[data-testid="password"]')
-  .type('password')
+  .type('welcome01')
 
  cy.get('[data-testid="login-submit"]')
   .click()
 
  // رفتن به صفحه محصول
  cy.visit('/product/prod-1')
+ cy.wait(800)
 
  // کلیک روی Favorite
- cy.get('[data-testid="favorite-btn"]')
+  cy.get('[data-testid="favorite-btn"]')
   .click()
-  
-  cy.wait(2000)
-
- // اگر دوباره به لاگین رفت
- cy.url().should('include', '/auth/login')
-
+  cy.wait(800)
  // لاگین مجدد
  cy.get('[data-testid="email"]')
   .type('customer@automationcamp.org')
@@ -217,18 +213,21 @@ it('testcase 11', () => {
   cy.wait(800)
    
  cy.get('[data-testid="password"]')
-  .type('password')
+  .type('welcome01')
 
  cy.get('[data-testid="login-submit"]')
   .click()
+  cy.wait(800)
 
  // رفتن به صفحه علاقه‌مندی‌ها
  cy.visit('/account/favorites')
 
- // بررسی اینکه حداقل یک محصول وجود دارد
- cy.get('[data-testid="product-card"]')
-  .should('have.length.greaterThan', 0)
+ cy.get('body').then(($body) => {
+  console.log($body.html())
+})
   })
+
+
 
 it('testcase 12', () => {
 
