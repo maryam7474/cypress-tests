@@ -913,6 +913,4 @@ it('testcase 27', () => {
        expect(res.body).to.have.property('message')
        expect(res.body.message).to.eq('Access token is required')
       })
-
-
    })
