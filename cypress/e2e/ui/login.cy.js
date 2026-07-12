@@ -351,8 +351,6 @@ it('testcase 15', () => {
   cy.get('[data-testid="product-image"]').type('https://example.com/image.jpg')
   cy.get('[data-testid="product-rental"]').check()
 
-
-
   cy.intercept('POST', '**/products').as('addProduct')
 
   cy.get('[data-testid="submit-product"]').click()
@@ -378,8 +376,8 @@ it('testcase 16', () => {
   cy.visit('/admin/orders')
   cy.get('[data-testid="view-order"]').first().click()
   cy.get('[data-testid="status-select"]').select('SHIPPED')
-  cy.wait(1000)
-  cy.intercept('PUT', 'http://localhost:5173/api/invoices/inv-5/status').as('updateOrder')
+  cy.wait(600)
+  cy.intercept('PUT', 'http://localhost:5173/api/invoices/inv-17bb36d0-a377-44a9-9f80-3655c1862425/status').as('updateOrder')
   cy.get('[data-testid="update-status"]').click()
   cy.wait('@updateOrder').its('response.statusCode').should('eq', 200)
   cy.visit('/admin/orders')
@@ -664,6 +662,8 @@ it('testcase 22', () => {
 })
 
 it('testcase 23', () => {
+   
+  const brandName = `Brand-${faker.string.alphanumeric(8)}`
 
   cy.request({
     method: 'POST',
@@ -675,8 +675,9 @@ it('testcase 23', () => {
   }).then((loginResponse) => {
 
     const token = loginResponse.body.access_token
+    
 
-    // 2️⃣ Create brand
+    // Create brand
     cy.request({
       method: 'POST',
       url: '/api/brands',
@@ -684,19 +685,19 @@ it('testcase 23', () => {
         Authorization: `Bearer ${token}`
       },
       body: {
-        name: 'Apple'
+        name: brandName
       }
     }).then((createResponse) => {
 
-      // 3️⃣ Check status
+      // Check status
       expect(createResponse.status).to.eq(201)
 
-      // 4️⃣ Check response body
+      // Check response body
       expect(createResponse.body).to.have.property('id')
       expect(createResponse.body).to.have.property('name')
 
-      // 5️⃣ Check values
-      expect(createResponse.body.name).to.eq('Apple')
+      // Check values
+      expect(createResponse.body.name).to.eq(brandName)
 
     })
 
@@ -864,7 +865,7 @@ it('testcase 25', () => {
     })
   })
   })
-it.only('testcase 26', () => {
+it('testcase 26', () => {
 
   cy.request('POST', '/api/users/login', {
   email: 'customer@automationcamp.org',
@@ -900,13 +901,7 @@ it.only('testcase 26', () => {
       }
     })
 
-      // پیدا کردن محصولی که هنوز Favorite نشده باشد
-      const product = products.find(product =>
-        !favorites.some(favorite =>
-          favorite.id === product.id ||
-          favorite.product_id === product.id
-        )
-      )
+      
 
       expect(product).to.exist
 
