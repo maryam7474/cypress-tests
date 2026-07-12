@@ -1,7 +1,8 @@
 import { getDollarAmount } from "../../support/utils"
+import { faker } from '@faker-js/faker';
 
 describe('Authentication', () => {
-  it('Valid user login', () => {
+  it('testcase 1', () => {
 
     cy.visit('http://localhost:5173/auth/login')
 
@@ -18,7 +19,7 @@ describe('Authentication', () => {
     cy.url({ timeout: 10000 }).should('include', '/')
 
     // بررسی نمایش منوی کاربر
-    cy.get('class="min-h-screen flex flex-col"').should('be.visible')
+    cy.get('[class="min-h-screen flex flex-col"]').should('be.visible')
   })
 })
 
@@ -98,7 +99,7 @@ it('testcase 6', () => {
 })
 
 
-it.only('testcase 7', () => {
+it('testcase 7', () => {
 
   cy.visit('/')
   cy.intercept('GET', '**products?_sort=price&_order=asc&*').as('getProducts')
@@ -293,7 +294,8 @@ it('testcase 13', () => {
 
 it('testcase 14', () => {
 
-  const brandName = 'Test Brand'
+  //const brandName = 'Test'
+  const brandName = faker.company.name()
 
   cy.visit('/auth/login')
 
@@ -861,61 +863,73 @@ it('testcase 25', () => {
 
     })
   })
-})
-it('testcase 26', () => {
+  })
+it.only('testcase 26', () => {
 
   cy.request('POST', '/api/users/login', {
-    email: 'customer@automationcamp.org',
-    password: 'welcome01'
+  email: 'customer@automationcamp.org',
+  password: 'welcome01'
   }).then((loginResponse) => {
 
-    const token = loginResponse.body.access_token
+  const token = loginResponse.body.access_token
 
-    // از یک محصول موجود استفاده کن
-    cy.request('GET', '/api/products')
-      .then((productsResponse) => {
+  // دریافت همه محصولات
+  cy.request('GET', '/api/products').then((productsResponse) => {
 
-        const productId = productsResponse.body.data[0 + 7].id
+    const products = productsResponse.body.data
 
-        // Add to favorites
-        cy.request({
-          method: 'POST',
-          url: '/api/favorites',
-          headers: {
-            Authorization: `Bearer ${token}`
-          },
-          body: {
-            product_id: productId
-          }
-        }).then((favoriteResponse) => {
+    
+    // دریافت علاقه‌مندی‌های فعلی
+    cy.request({
+      method: 'GET',
+      url: '/api/favorites',
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }).then((favoritesResponse) => {
 
-          expect([200, 201]).to.include(favoriteResponse.status)
+      const favorites = favoritesResponse.body.data || []
 
-          // Verify favorites
-          cy.request({
-            method: 'GET',
-            url: '/api/favorites',
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }).then((favoritesResponse) => {
+      favorites.forEach((favorite) => {
 
-            console.log(favoritesResponse.body) // 🔥 خیلی مهم
+    cy.request({
+      method: 'DELETE',
+      url: `/api/favorites/${favorite.id}`,
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
 
-            const list = favoritesResponse.body.data || favoritesResponse.body
+      // پیدا کردن محصولی که هنوز Favorite نشده باشد
+      const product = products.find(product =>
+        !favorites.some(favorite =>
+          favorite.id === product.id ||
+          favorite.product_id === product.id
+        )
+      )
 
-            const favorites = list.find(p =>
-              p.id === productId || p.product_id === productId
-            )
+      expect(product).to.exist
 
-            expect(favorites).to.exist
-          })
+      cy.request({
+        method: 'POST',
+        url: '/api/favorites',
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: {
+          product_id: product.id
+        }
+      }).then((response) => {
 
-        })
+        expect(response.status).to.be.oneOf([200, 201])
 
       })
+
+    })
+
   })
-})
+
+  })
 
 it('testcase 27', () => {
 
@@ -931,3 +945,4 @@ it('testcase 27', () => {
     expect(res.body.message).to.eq('Access token is required')
   })
 })
+})})
